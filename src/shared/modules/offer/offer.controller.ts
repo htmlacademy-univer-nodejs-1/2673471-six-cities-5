@@ -113,23 +113,26 @@ export class OfferController extends BaseController {
     return items.map((item) => {
       const favIds = Array.isArray(item.favoriteUserIds) ? item.favoriteUserIds : [];
       const isFav = !!(userId && favIds.some((id) => String(id) === String(userId)));
-      return { ...item, isFavorite: isFav };
+      return {...item, isFavorite: isFav};
     });
   }
 
   public async index(req: Request, res: Response): Promise<void> {
     const offers = await this.offerService.find();
     const userId = req.tokenPayload?.id;
-    const prepared = userId ? this.applyFavoriteFlag(offers as any[], userId) : offers.map((o) => ({...o, isFavorite: false}));
+    const prepared = userId ? this.applyFavoriteFlag(offers as any[], userId) : offers.map((o) => ({
+      ...o,
+      isFavorite: false
+    }));
     const responseData = fillDTO(OfferRdo, prepared);
     this.ok(res, responseData);
   }
 
   public async create(
-    { body, tokenPayload }: CreateOfferRequest,
+    {body, tokenPayload}: CreateOfferRequest,
     res: Response
   ): Promise<void> {
-    const result = await this.offerService.create({ ...body, authorId: tokenPayload.id });
+    const result = await this.offerService.create({...body, authorId: tokenPayload.id});
     this.created(res, fillDTO(OfferRdo, result));
   }
 
@@ -149,10 +152,18 @@ export class OfferController extends BaseController {
   ): Promise<void> {
     const {offerId} = req.params as ParamOfferId;
     const {body} = req;
+    const userId = req.tokenPayload?.id;
 
     const updatedOffer = await this.offerService.updateById(offerId, body);
-    const userId = req.tokenPayload?.id;
-    const prepared = updatedOffer ? (userId ? this.applyFavoriteFlag([updatedOffer] as any[], userId)[0] : { ...updatedOffer, isFavorite: false }) : null;
+    let prepared = null;
+    if (updatedOffer) {
+      if (userId) {
+        prepared = this.applyFavoriteFlag([updatedOffer] as any[], userId)[0];
+      } else {
+        prepared = {...updatedOffer, isFavorite: false};
+      }
+    }
+
     this.ok(res, fillDTO(OfferRdo, prepared));
   }
 
@@ -189,7 +200,10 @@ export class OfferController extends BaseController {
     }
 
     const userId = req.tokenPayload?.id;
-    const prepared = userId ? this.applyFavoriteFlag(premiumOffers as any[], userId) : premiumOffers.map((o) => ({...o, isFavorite: false}));
+    const prepared = userId ? this.applyFavoriteFlag(premiumOffers as any[], userId) : premiumOffers.map((o) => ({
+      ...o,
+      isFavorite: false
+    }));
     this.ok(res, fillDTO(OfferRdo, prepared));
   }
 

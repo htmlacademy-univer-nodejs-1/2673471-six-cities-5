@@ -44,7 +44,6 @@ export class UserController extends BaseController {
       middlewares: [new ValidateDtoMiddleware(LoginUserDto)]
     });
     this.addRoute({path: '/login', method: HttpMethod.Get, handler: this.checkAuth});
-    this.addRoute({path: '/logout', method: HttpMethod.Post, handler: this.logout});
     this.addRoute({
       path: '/:userId/avatar',
       method: HttpMethod.Post,
@@ -101,13 +100,6 @@ export class UserController extends BaseController {
     }
 
     this.ok(res, fillDTO(LoggedUserRdo, exitsUser));
-  }
-
-  public async logout(
-    _req: Request,
-    _res: Response,
-  ): Promise<void> {
-    this.logger.info('User logged out');
   }
 
   public async uploadAvatar(req: Request, res: Response) {

@@ -38,7 +38,7 @@ export function createOffer(offerData: string): Offer {
     maxGuests: parseInt(maxGuests, 10),
     price: parseInt(price, 10),
     comforts: comforts.split(';').map((comfort) => comfort as ComfortType),
-    author: {name: authorName, email: authorEmail, avatar: authorAvatar, userType} as User,
+    author: {name: authorName, email: authorEmail, avatarPath: authorAvatar, userType} as User,
     commentsCount: 228,
     location: {latitude: parseFloat(latitude), longitude: parseFloat(longitude)} as Location,
   };
