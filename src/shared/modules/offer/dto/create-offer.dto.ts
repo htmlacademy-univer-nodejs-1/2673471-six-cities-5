@@ -4,7 +4,6 @@ import {
   IsDateString,
   IsEnum,
   IsInt,
-  IsMongoId,
   IsNumber,
   IsUrl,
   Max,
@@ -16,7 +15,7 @@ import {
   ValidateNested,
   IsObject,
   IsLatitude,
-  IsLongitude
+  IsLongitude, IsOptional
 } from 'class-validator';
 import {City, ComfortType, HousingType, Location} from '../../../types/index.js';
 import {CreateOfferValidationMessage} from './create-offer.messages.js';
@@ -57,9 +56,6 @@ export class CreateOfferDto {
   @IsBoolean({message: CreateOfferValidationMessage.isPremium.invalidFormat})
   public isPremium: boolean;
 
-  @IsBoolean({message: CreateOfferValidationMessage.isFavorite.invalidFormat})
-  public isFavorite: boolean;
-
   @IsNumber({maxDecimalPlaces: 1}, {message: CreateOfferValidationMessage.rating.invalidFormat})
   @Min(1, {message: CreateOfferValidationMessage.rating.minValue})
   @Max(5, {message: CreateOfferValidationMessage.rating.maxValue})
@@ -88,10 +84,11 @@ export class CreateOfferDto {
   @IsEnum(ComfortType, {each: true, message: CreateOfferValidationMessage.comforts.invalidFormat})
   public comforts: ComfortType[];
 
-  @IsMongoId({message: CreateOfferValidationMessage.authorId.invalidId})
   public authorId: string;
 
-  public commentsCount: number;
+  @IsOptional()
+  @IsInt()
+  public commentsCount?: number;
 
   @IsObject({message: CreateOfferValidationMessage.location.invalidFormat})
   @ValidateNested()

@@ -10,7 +10,7 @@ export class CreateUserDto {
   public email: string;
 
   @IsString({message: CreateUserValidationMessage.avatar.invalidFormat})
-  public avatar: string;
+  public avatarPath: string;
 
   @Length(6, 12, {message: CreateUserValidationMessage.password.minLength})
   public password: string;

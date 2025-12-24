@@ -1,7 +1,7 @@
 ﻿import {
   BaseController,
   HttpError,
-  HttpMethod, UploadFileMiddleware,
+  HttpMethod, PrivateRouteMiddleware, UploadFileMiddleware,
   ValidateDtoMiddleware,
   ValidateObjectIdMiddleware
 } from '../../libs/rest/index.js';
@@ -43,8 +43,12 @@ export class UserController extends BaseController {
       handler: this.login,
       middlewares: [new ValidateDtoMiddleware(LoginUserDto)]
     });
-    this.addRoute({path: '/login', method: HttpMethod.Get, handler: this.checkAuth});
-    this.addRoute({path: '/logout', method: HttpMethod.Post, handler: this.logout});
+    this.addRoute({
+      path: '/login',
+      method: HttpMethod.Get,
+      handler: this.checkAuth,
+      middlewares: [new PrivateRouteMiddleware()]
+    });
     this.addRoute({
       path: '/:userId/avatar',
       method: HttpMethod.Post,
@@ -101,13 +105,6 @@ export class UserController extends BaseController {
     }
 
     this.ok(res, fillDTO(LoggedUserRdo, exitsUser));
-  }
-
-  public async logout(
-    _req: Request,
-    _res: Response,
-  ): Promise<void> {
-    this.logger.info('User logged out');
   }
 
   public async uploadAvatar(req: Request, res: Response) {

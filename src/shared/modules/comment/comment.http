@@ -2,13 +2,13 @@
 ## Создать комментарий
 
 POST http://localhost:6000/comments HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRvcmFuc0BvdmVybG9vay5uZXQiLCJuYW1lIjoiSmFjayIsImlkIjoiNjkyNzI5OTQxZDk1ZWMzMWFlZmM1MmUxIiwiaWF0IjoxNzY1OTAzNDI1LCJleHAiOjE3NjU5MDQwMjV9.ghDYGMtEHG5xzaVxApD7CjjO98ph-HdR9qugHjhlvhA
 Content-Type: application/json
 
 {
-  "text": "йоу, найс, кчау",
+  "text": "тестовый коммент",
   "rating": 5,
-  "offerId": "69200d3b792b6714899391c1",
-  "authorId": "69200d3b792b6714899391be"
+  "offerId": "69200d3b792b6714899391c1"
 }
 
 ###

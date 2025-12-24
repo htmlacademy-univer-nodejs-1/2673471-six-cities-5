@@ -25,6 +25,13 @@ Content-Type: application/json
 
 ###
 
+## Проверка состояния пользователя
+
+GET http://localhost:6000/users/login HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRvcmFuc0BvdmVybG9vay5uZXQiLCJuYW1lIjoiSmFjayIsImlkIjoiNjkyNzI5OTQxZDk1ZWMzMWFlZmM1MmUxIiwiaWF0IjoxNzY1OTA1MDE5LCJleHAiOjE3NjU5MDU2MTl9.hHDKjfcQFYFUIWdGl0J9OY9wvcy6X8Mg8XRWjQ0uRPg
+
+###
 
 ## Отправить изображение
 

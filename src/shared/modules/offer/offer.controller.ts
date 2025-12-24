@@ -106,30 +106,51 @@ export class OfferController extends BaseController {
     });
   }
 
+  private toPlainObject(obj: unknown): Record<string, unknown> {
+    if (obj && typeof (obj as { toObject?: () => unknown }).toObject === 'function') {
+      return (obj as { toObject: () => unknown }).toObject() as Record<string, unknown>;
+    }
+    return obj as Record<string, unknown>;
+  }
+
+  private extractId(val: unknown): string | undefined {
+    if (val === null || val === undefined) {
+      return undefined;
+    }
+    if (typeof val === 'object' && '_id' in (val as Record<string, unknown>)) {
+      return String((val as Record<string, unknown>)['_id']);
+    }
+    return String(val);
+  }
+
   private applyFavoriteFlag<T extends { favoriteUserIds?: unknown; isFavorite?: boolean }>(
     items: T[],
     userId?: string
   ): T[] {
     return items.map((item) => {
-      const favIds = Array.isArray(item.favoriteUserIds) ? item.favoriteUserIds : [];
-      const isFav = !!(userId && favIds.some((id) => String(id) === String(userId)));
-      return { ...item, isFavorite: isFav };
+      const plainItem = this.toPlainObject(item);
+      const favIds = Array.isArray(plainItem.favoriteUserIds) ? (plainItem.favoriteUserIds as unknown[]) : [];
+      const isFav = !!(userId && favIds.some((id: unknown) => String(id) === String(userId)));
+      return {...plainItem, isFavorite: isFav} as unknown as T;
     });
   }
 
   public async index(req: Request, res: Response): Promise<void> {
     const offers = await this.offerService.find();
     const userId = req.tokenPayload?.id;
-    const prepared = userId ? this.applyFavoriteFlag(offers as any[], userId) : offers.map((o) => ({...o, isFavorite: false}));
+    const prepared = userId ? this.applyFavoriteFlag<Record<string, unknown>>(offers as unknown as Record<string, unknown>[], userId) : (offers as unknown as unknown[]).map((o) => ({
+      ...this.toPlainObject(o),
+      isFavorite: false
+    }));
     const responseData = fillDTO(OfferRdo, prepared);
     this.ok(res, responseData);
   }
 
   public async create(
-    { body, tokenPayload }: CreateOfferRequest,
+    {body, tokenPayload}: CreateOfferRequest,
     res: Response
   ): Promise<void> {
-    const result = await this.offerService.create({ ...body, authorId: tokenPayload.id });
+    const result = await this.offerService.create({...body, authorId: tokenPayload.id});
     this.created(res, fillDTO(OfferRdo, result));
   }
 
@@ -149,18 +170,38 @@ export class OfferController extends BaseController {
   ): Promise<void> {
     const {offerId} = req.params as ParamOfferId;
     const {body} = req;
-
-    const updatedOffer = await this.offerService.updateById(offerId, body);
     const userId = req.tokenPayload?.id;
-    const prepared = updatedOffer ? (userId ? this.applyFavoriteFlag([updatedOffer] as any[], userId)[0] : { ...updatedOffer, isFavorite: false }) : null;
+    const updatedOffer = await this.offerService.updateById(offerId, body);
+    if (!updatedOffer) {
+      this.ok(res, null);
+      return;
+    }
+
+    const prepared = userId
+      ? this.applyFavoriteFlag<Record<string, unknown>>([updatedOffer as unknown as Record<string, unknown>], userId)[0]
+      : {...this.toPlainObject(updatedOffer), isFavorite: false};
+
     this.ok(res, fillDTO(OfferRdo, prepared));
   }
 
   public async delete(
-    req: Request,
+    req: Request<ParamOfferId>,
     res: Response,
   ): Promise<void> {
     const {offerId} = req.params as ParamOfferId;
+    const userId = req.tokenPayload?.id;
+
+
+    const existing = await this.offerService.findById(offerId) as unknown;
+    if (!existing) {
+      throw new HttpError(StatusCodes.NOT_FOUND, `Offer with id ${offerId} not found.`, 'OfferController');
+    }
+
+    const authorId = this.extractId((existing as Record<string, unknown>)['authorId']);
+    if (!userId || String(authorId) !== String(userId)) {
+      throw new HttpError(StatusCodes.FORBIDDEN, 'Forbidden', 'OfferController');
+    }
+
     await this.offerService.deleteById(offerId);
     await this.commentService.deleteByOfferId(offerId);
 
@@ -189,30 +230,33 @@ export class OfferController extends BaseController {
     }
 
     const userId = req.tokenPayload?.id;
-    const prepared = userId ? this.applyFavoriteFlag(premiumOffers as any[], userId) : premiumOffers.map((o) => ({...o, isFavorite: false}));
+    const prepared = userId ? this.applyFavoriteFlag<Record<string, unknown>>(premiumOffers as unknown as Record<string, unknown>[], userId) : (premiumOffers as unknown as unknown[]).map((o) => ({
+      ...this.toPlainObject(o),
+      isFavorite: false
+    }));
     this.ok(res, fillDTO(OfferRdo, prepared));
   }
 
   public async getFavorites(req: Request, res: Response): Promise<void> {
-    const userId = req.tokenPayload?.id;
-    const favoriteOffers = await this.offerService.findFavorites(String(userId));
-    const prepared = this.applyFavoriteFlag(favoriteOffers as any[], String(userId));
+    const userId = String(req.tokenPayload.id);
+    const favoriteOffers = await this.offerService.findFavorites(userId);
+    const prepared = this.applyFavoriteFlag(favoriteOffers, userId);
     this.ok(res, fillDTO(OfferRdo, prepared));
   }
 
-  public async addFavorite(req: Request, res: Response): Promise<void> {
-    const {offerId} = req.params as ParamOfferId;
-    const userId = req.tokenPayload?.id;
-    const updatedOffer = await this.offerService.addToFavorites(offerId, String(userId));
-    const prepared = updatedOffer ? this.applyFavoriteFlag([updatedOffer] as any[], String(userId))[0] : null;
+  public async addFavorite(req: Request<ParamOfferId>, res: Response): Promise<void> {
+    const {offerId} = req.params;
+    const userId = String(req.tokenPayload.id);
+    const updatedOffer = await this.offerService.addToFavorites(offerId, userId);
+    const prepared = updatedOffer ? this.applyFavoriteFlag([updatedOffer], userId)[0] : null;
     this.ok(res, fillDTO(OfferDetailRdo, prepared));
   }
 
-  public async removeFavorite(req: Request, res: Response): Promise<void> {
-    const {offerId} = req.params as ParamOfferId;
-    const userId = req.tokenPayload?.id;
-    const updatedOffer = await this.offerService.removeFromFavorites(offerId, String(userId));
-    const prepared = updatedOffer ? this.applyFavoriteFlag([updatedOffer] as any[], String(userId))[0] : null;
+  public async removeFavorite(req: Request<ParamOfferId>, res: Response): Promise<void> {
+    const {offerId} = req.params;
+    const userId = String(req.tokenPayload.id);
+    const updatedOffer = await this.offerService.removeFromFavorites(offerId, userId);
+    const prepared = updatedOffer ? this.applyFavoriteFlag([updatedOffer], userId)[0] : null;
     this.ok(res, fillDTO(OfferDetailRdo, prepared));
   }
 

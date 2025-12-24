@@ -3,39 +3,39 @@ import {City, HousingType, Location} from '../../../types/index.js';
 
 export class OfferRdo {
   @Expose()
-  public id: string;
+  public id!: string;
 
   @Expose()
-  public title: string;
+  public title!: string;
 
   @Expose()
-  public price: number;
+  public price!: number;
 
   @Expose()
-  public housingType: HousingType;
+  public housingType!: HousingType;
 
   @Expose()
-  public isFavorite: boolean;
+  public isFavorite!: boolean;
 
   @Expose()
-  public postDate: string;
+  public postDate!: string;
 
   @Expose()
-  public city: City;
+  public city!: City;
 
   @Expose()
-  public previewImage: string;
+  public previewImage!: string;
 
   @Expose()
-  public isPremium: boolean;
+  public isPremium!: boolean;
 
   @Expose()
-  public rating: number;
+  public rating!: number;
 
   @Expose()
-  public commentsCount: number;
+  public commentsCount!: number;
 
   @Expose()
   @Type(() => Object)
-  public location: Location;
+  public location!: Location;
 }

@@ -41,7 +41,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/offer'
+                $ref: '#/components/schemas/error'
         '409':
           description: Пользователь с таким email уже существует
           content:
@@ -170,7 +170,7 @@ paths:
               schema:
                 $ref: '#/components/responses/unauthorized'
 
-  /offers/{offerId}/:
+  /offers/{offerId}:
     parameters:
       - in: path
         name: offerId
@@ -299,20 +299,14 @@ paths:
               schema:
                 $ref: '#/components/responses/notFound'
 
-  /comments/{offerId}:
-    parameters:
-      - name: offerId
-        in: path
-        required: true
-        schema:
-          type: string
-        description: Идентификатор предложения, к которому добавляется комментарий.
-
+  /comments:
     post:
       tags:
         - comments
       summary: Добавление комментария
       description: Добавляет новый комментарий к предложению.
+      security:
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
@@ -530,7 +524,7 @@ components:
       required: [ latitude, longitude ]
     offer:
       type: object
-      required: [ title, description, postDate, city, previewImage, images, isPremium, isFavorite, rating, housingType, rooms, maxGuests, price, comforts, authorId, location ]
+      required: [ title, description, postDate, city, previewImage, images, isPremium, isFavorite, rating, housingType, rooms, maxGuests, price, comforts, location ]
       properties:
         id:
           type: string
@@ -626,7 +620,7 @@ components:
       required: [ id, title, price, housingType, isFavorite, postDate, city, previewImage, isPremium, rating, commentsCount ]
     offerCreate:
       type: object
-      required: [ title, description, postDate, city, previewImage, images, isPremium, housingType, rooms, maxGuests, price, comforts, authorId, location ]
+      required: [ title, description, postDate, city, previewImage, images, isPremium, housingType, rooms, maxGuests, price, comforts, location ]
       properties:
         title:
           $ref: '#/components/schemas/offer/properties/title'
@@ -652,8 +646,6 @@ components:
           $ref: '#/components/schemas/offer/properties/price'
         comforts:
           $ref: '#/components/schemas/offer/properties/comforts'
-        authorId:
-          $ref: '#/components/schemas/offer/properties/authorId'
         location:
           $ref: '#/components/schemas/location'
     comment:
@@ -677,7 +669,7 @@ components:
           $ref: '#/components/schemas/user'
     newComment:
       type: object
-      required: [ text, rating ]
+      required: [ text, rating, offerId ]
       properties:
         text:
           type: string
@@ -687,6 +679,8 @@ components:
           type: integer
           minimum: 1
           maximum: 5
+        offerId:
+          type: string
   responses:
     unauthorized:
       description: Требуется аутентификация
