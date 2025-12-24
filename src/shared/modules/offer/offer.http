@@ -41,6 +41,18 @@ Content-Type: application/json
 
 ###
 
+## Добавление в избранное (Используем роут из контроллера)
+PATCH http://localhost:6000/offers/favorites/69200d3b792b6714899391c2 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRvcmFuc0BvdmVybG9vay5uZXQiLCJuYW1lIjoiSmFjayIsImlkIjoiNjkyNzI5OTQxZDk1ZWMzMWFlZmM1MmUxIiwiaWF0IjoxNzY2NTc3MTcxLCJleHAiOjE3NjY1Nzc3NzF9.BDhsVBV46QuMpom5KgOt5vDAbkConSsIR7Z2MC2epaw
+
+###
+
+## Удаление из избранного
+DELETE http://localhost:6000/offers/favorites/69200d3b792b6714899391c2 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRvcmFuc0BvdmVybG9vay5uZXQiLCJuYW1lIjoiSmFjayIsImlkIjoiNjkyNzI5OTQxZDk1ZWMzMWFlZmM1MmUxIiwiaWF0IjoxNzY2NTc3MTcxLCJleHAiOjE3NjY1Nzc3NzF9.BDhsVBV46QuMpom5KgOt5vDAbkConSsIR7Z2MC2epaw
+
+###
+
 ## Список комментариев к объявлению
 GET http://localhost:6000/offers/69200d3b792b6714899391c1/comments HTTP/1.1
 
